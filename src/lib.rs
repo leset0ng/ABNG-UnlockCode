@@ -7,7 +7,6 @@ use crate::exports::astrobox::psys_plugin::{
 
 pub mod logger;
 pub mod ui;
-pub mod resources;
 
 wit_bindgen::generate!({
     path: "wit",
@@ -28,7 +27,10 @@ impl event::Guest for MyPlugin {
             EventType::DeviceAction => {}
             EventType::ProviderAction => {}
             EventType::DeeplinkAction => {}
-            EventType::TransportPacket => {}
+            EventType::TransportPacket => {
+                ui::handle_transport_packet(&event_payload);
+            }
+            EventType::Timer=>{}
         };
 
         tracing::info!("event_payload: {}", event_payload);
@@ -43,11 +45,11 @@ impl event::Guest for MyPlugin {
     fn on_ui_event(
         event_id: _rt::String,
         event: event::Event,
-        _event_payload: _rt::String,
+        event_payload: _rt::String,
     ) -> wit_bindgen::rt::async_support::FutureReader<_rt::String> {
         let (writer, reader) = wit_future::new::<String>(|| "".to_string());
 
-        ui::ui_event_processor(event, &event_id);
+        ui::ui_event_processor(event, &event_id, &event_payload);
 
         wit_bindgen::spawn(async move {
             let _ = writer.write("".to_string()).await;
@@ -71,6 +73,8 @@ impl event::Guest for MyPlugin {
     fn on_card_render(_card_id: _rt::String) -> wit_bindgen::rt::async_support::FutureReader<()> {
         let (writer, reader) = wit_future::new::<()>(|| ());
 
+        ui::render_text_card(&_card_id);
+
         wit_bindgen::spawn(async move {
             let _ = writer.write(()).await;
         });
@@ -83,8 +87,31 @@ impl lifecycle::Guest for MyPlugin {
     #[allow(async_fn_in_trait)]
     fn on_load() -> () {
         logger::init();
-        tracing::info!("Hello AstroBox V2 Plugin!");
+        tracing::info!("Unlock Code Calculator loaded");
+        ui::register_cards();
     }
+}
+
+pub fn calc_unlock_code(mac: String, sn: String) -> String {
+    use sha2::{Digest, Sha256};
+
+    let mac = mac.replace(":", "").trim().to_string();
+    let sn = sn.trim().to_string();
+
+    let mut hasher = Sha256::default();
+    hasher.update(mac);
+    hasher.update(sn);
+    hasher.update("XIAOMI");
+
+    let hash = hasher.finalize();
+
+    let mut code = String::new();
+    for i in 0..10 {
+        let k = hash[i as usize] % 0xA;
+        code.push_str(&k.to_string());
+    }
+
+    return code;
 }
 
 export!(MyPlugin);
