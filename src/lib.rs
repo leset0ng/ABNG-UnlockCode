@@ -27,9 +27,7 @@ impl event::Guest for MyPlugin {
             EventType::DeviceAction => {}
             EventType::ProviderAction => {}
             EventType::DeeplinkAction => {}
-            EventType::TransportPacket => {
-                ui::handle_transport_packet(&event_payload);
-            }
+            EventType::TransportPacket => {}
             EventType::Timer=>{}
         };
 
@@ -73,8 +71,6 @@ impl event::Guest for MyPlugin {
     fn on_card_render(_card_id: _rt::String) -> wit_bindgen::rt::async_support::FutureReader<()> {
         let (writer, reader) = wit_future::new::<()>(|| ());
 
-        ui::render_text_card(&_card_id);
-
         wit_bindgen::spawn(async move {
             let _ = writer.write(()).await;
         });
@@ -88,7 +84,6 @@ impl lifecycle::Guest for MyPlugin {
     fn on_load() -> () {
         logger::init();
         tracing::info!("Unlock Code Calculator loaded");
-        ui::register_cards();
     }
 }
 

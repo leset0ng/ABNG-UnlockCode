@@ -1,13 +1,13 @@
 {
-    "name": "Blank Template",
-    "icon": "icon.png",
-    "version": "1.0.0",
-    "description": "一个示例 AstroBox 插件",
-    "author": "AstroBox Team",
-    "website": "https://example.com",
-    "entry": "astrobox_ng_plugin_template_rust.wasm",
-    "wasi_version": 2,
-    "api_level": 2,
-    "permissions": ["network"],
-    "additional_files": []
+  "name": "Unlock Code Calculator",
+  "icon": "icon.png",
+  "version": "1.0.0",
+  "description": "计算设备解锁码并显示",
+  "author": "AstroBox",
+  "website": "https://plugindoc-v2.astrobox.online",
+  "entry": "astrobox_ng_plugin_template_rust.wasm",
+  "wasi_version": 2,
+  "api_level": 2,
+  "permissions": ["request", "register_transport_recv"],
+  "additional_files": []
 }
